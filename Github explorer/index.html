@@ -1,0 +1,485 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Galaxy Explorer</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+
+        :root {
+            --primary-color: #6a0dad;
+            --secondary-color: #00ffff;
+            --background-color: #0a0a2a;
+            --card-background: #1a1a3a;
+            --text-color: #ffffff;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px),
+                radial-gradient(rgba(255,255,255,.4), rgba(255,255,255,.1) 2px, transparent 30px);
+            background-size: 550px 550px, 350px 350px, 250px 250px, 150px 150px;
+            background-position: 0 0, 40px 60px, 130px 270px, 70px 100px;
+            animation: backgroundScroll 60s linear infinite;
+        }
+
+        @keyframes backgroundScroll {
+            0% { background-position: 0 0, 40px 60px, 130px 270px, 70px 100px; }
+            100% { background-position: 550px 550px, 590px 610px, 680px 820px, 620px 650px; }
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            text-align: center;
+            padding: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 0 10px var(--secondary-color);
+        }
+
+        header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            animation: rotate 10s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        main {
+            max-width: 800px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        #searchForm {
+            display: flex;
+            margin-bottom: 2rem;
+            position: relative;
+        }
+
+        #usernameInput {
+            flex-grow: 1;
+            padding: 0.75rem 1rem 0.75rem 3rem;
+            font-size: 1rem;
+            border: none;
+            border-radius: 50px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-color);
+            box-shadow: 0 0 15px var(--secondary-color);
+            transition: all 0.3s ease;
+        }
+
+        #usernameInput:focus {
+            outline: none;
+            box-shadow: 0 0 20px var(--secondary-color);
+        }
+
+        #searchForm i {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--secondary-color);
+        }
+
+        button {
+            padding: 0.75rem 1.5rem;
+            font-size: 1rem;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-left: 1rem;
+            box-shadow: 0 0 15px var(--secondary-color);
+        }
+
+        button:hover {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px var(--secondary-color);
+        }
+
+        .user-card {
+            background-color: var(--card-background);
+            border-radius: 15px;
+            box-shadow: 0 0 20px var(--secondary-color);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 30px var(--secondary-color);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin-right: 2rem;
+            border: 5px solid var(--secondary-color);
+            transition: all 0.3s ease;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 255, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 255, 255, 0); }
+        }
+
+        .avatar:hover {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        .user-details h2 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+        }
+
+        .user-details p {
+            font-size: 1rem;
+            color: #bbb;
+        }
+
+        .user-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1rem;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 1.5rem;
+            color: var(--secondary-color);
+        }
+
+        .repos {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .repo-card {
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .repo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0 15px var(--secondary-color);
+        }
+
+        .repo-card h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+            color: var(--secondary-color);
+        }
+
+        .repo-card p {
+            font-size: 0.9rem;
+            color: #bbb;
+            margin-bottom: 0.5rem;
+        }
+
+        .language-dot {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 0.5rem;
+        }
+
+        .error {
+            background-color: #ff6b6b;
+            color: white;
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        #themeToggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background-color: var(--secondary-color);
+            color: var(--primary-color);
+            border: none;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 0 15px var(--secondary-color);
+        }
+
+        #themeToggle:hover {
+            background-color: var(--primary-color);
+            color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px var(--secondary-color);
+        }
+
+        .light-theme {
+            --primary-color: #6a0dad;
+            --secondary-color: #00ffff;
+            --background-color: #ffffff;
+            --card-background: #f0f0f0;
+            --text-color: #333333;
+        }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 2rem; }
+            #searchForm { flex-direction: column; }
+            button { margin-left: 0; margin-top: 1rem; }
+            .user-info { flex-direction: column; text-align: center; }
+            .avatar { margin-right: 0; margin-bottom: 1rem; }
+            .user-stats { flex-wrap: wrap; }
+            .stat { flex-basis: 50%; margin-bottom: 1rem; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1><i class="fab fa-github"></i> GitHub Galaxy Explorer</h1>
+    </header>
+    <main>
+        <form id="searchForm">
+            <i class="fas fa-search"></i>
+            <input type="text" id="usernameInput" placeholder="Enter GitHub username" required>
+            <button type="submit">Explore</button>
+        </form>
+        <div id="results"></div>
+    </main>
+    <button id="themeToggle"><i class="fas fa-moon"></i></button>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/0.21.1/axios.min.js"></script>
+    <script>
+        const API_BASE_URL = 'https://api.github.com/users/';
+        const searchForm = document.getElementById('searchForm');
+        const usernameInput = document.getElementById('usernameInput');
+        const resultsContainer = document.getElementById('results');
+
+        searchForm.addEventListener('submit', handleSearch);
+
+        async function handleSearch(e) {
+            e.preventDefault();
+            const username = usernameInput.value.trim();
+            if (!username) return;
+
+            try {
+                const userData = await fetchUserData(username);
+                const reposData = await fetchUserRepos(username);
+                displayResults(userData, reposData);
+            } catch (error) {
+                displayError(error.message);
+            }
+        }
+
+        async function fetchUserData(username) {
+            const response = await axios.get(`${API_BASE_URL}${username}`);
+            return response.data;
+        }
+
+        async function fetchUserRepos(username) {
+            const response = await axios.get(`${API_BASE_URL}${username}/repos?sort=updated&per_page=10`);
+            return response.data;
+        }
+
+        function displayResults(userData, reposData) {
+            const userCard = createUserCard(userData);
+            const reposList = createReposList(reposData);
+
+            resultsContainer.innerHTML = '';
+            resultsContainer.appendChild(userCard);
+            resultsContainer.appendChild(reposList);
+        }
+
+        function createUserCard(userData) {
+            const card = document.createElement('div');
+            card.className = 'user-card';
+
+            const userInfo = `
+                <div class="user-info">
+                    <img src="${userData.avatar_url}" alt="${userData.name}" class="avatar">
+                    <div class="user-details">
+                        <h2>${userData.name || userData.login}</h2>
+                        <p>${userData.bio || 'No bio available'}</p>
+                    </div>
+                </div>
+                <div class="user-stats">
+                    <div class="stat">
+                        <strong>${userData.public_repos}</strong>
+                        <span>Repositories</span>
+                    </div>
+                    <div class="stat">
+                        <strong>${userData.followers}</strong>
+                        <span>Followers</span>
+                    </div>
+                    <div class="stat">
+                        <strong>${userData.following}</strong>
+                        <span>Following</span>
+                    </div>
+                </div>
+            `;
+
+            card.innerHTML = userInfo;
+            return card;
+        }
+
+        function createReposList(reposData) {
+            const reposList = document.createElement('div');
+            reposList.className = 'repos';
+
+            const sortedRepos = sortReposByStars(reposData);
+            const topRepos = sortedRepos.slice(0, 6);
+
+            topRepos.forEach((repo, index) => {
+                const repoCard = createRepoCard(repo);
+                repoCard.style.animationDelay = `${index * 0.1}s`;
+                reposList.appendChild(repoCard);
+            });
+
+            return reposList;
+        }
+
+        function sortReposByStars(repos) {
+            return repos.sort((a, b) => b.stargazers_count - a.stargazers_count);
+        }
+
+        function createRepoCard(repo) {
+            const card = document.createElement('div');
+            card.className = 'repo-card';
+
+            const languageColor = getLanguageColor(repo.language);
+            const repoInfo = `
+                <h3>${repo.name}</h3>
+                <p>${repo.description || 'No description available'}</p>
+                <p>
+                    <span class="language-dot" style="background-color: ${languageColor};"></span>
+                    ${repo.language || 'Unknown'}
+                </p>
+                <p>⭐ ${repo.stargazers_count}</p>
+            `;
+
+            card.innerHTML = repoInfo;
+            return card;
+        }
+
+        function getLanguageColor(language) {
+            const colors = {
+                JavaScript: '#f1e05a',
+                Python: '#3572A5',
+                Java: '#b07219',
+                TypeScript: '#2b7489',
+                CSS: '#563d7c',
+                HTML: '#e34c26',
+                Ruby: '#701516',
+                Go: '#00ADD8',
+                Swift: '#ffac45',
+                Kotlin: '#F18E33',
+                Rust: '#dea584',
+                C: '#555555',
+                'C++': '#f34b7d',
+                'C#': '#178600',
+                PHP: '#4F5D95',
+                Shell: '#89e051',
+                Scala: '#c22d40',
+                Jupyter: '#DA5B0B',
+            };
+
+            return colors[language] || '#808080';
+        }
+
+        function displayError(message) {
+            resultsContainer.innerHTML = `<p class="error">${message}</p>`;
+        }
+
+        function setupThemeToggle() {
+            const themeToggle = document.getElementById('themeToggle');
+            const body = document.body;
+            const icon = themeToggle.querySelector('i');
+
+            themeToggle.addEventListener('click', () => {
+                body.classList.toggle('light-theme');
+                if (body.classList.contains('light-theme')) {
+                    icon.classList.remove('fa-moon');
+                    icon.classList.add('fa-sun');
+                } else {
+                    icon.classList.remove('fa-sun');
+                    icon.classList.add('fa-moon');
+                }
+            });
+        }
+
+        setupThemeToggle();
+    </script>
+</body>
+</html>
